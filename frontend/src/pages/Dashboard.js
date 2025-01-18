@@ -1,4 +1,20 @@
-import React from 'react';
+// Importaciones necesarias
+import React, { useState, useEffect } from 'react';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faDollarSign, 
+   
+   
+   
+  faChartLine, 
+  faFileInvoice, 
+  faUsers
+} from '@fortawesome/free-solid-svg-icons';
+import Sidebar from '../components/layout/Sidebar';
+import Header from '../components/layout/Header';
+import LoadingSpinner from '../components/shared/LoadingSpinner';
+import EstadisticasCard from '../components/widgets/EstadisticasCard';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,15 +27,6 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faDollarSign, 
-  faCheck, 
-  faTimes, 
-  faClock,
-  faFileAlt 
-} from '@fortawesome/free-solid-svg-icons';
-import Sidebar from '../components/layout/Sidebar';
 
 ChartJS.register(
   CategoryScale,
@@ -33,6 +40,30 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const [estadisticas, setEstadisticas] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simula la carga de estadísticas desde una API
+    const fetchEstadisticas = async () => {
+      try {
+        const data = {
+          totalCotizaciones: 120,
+          totalClientes: 45,
+          ingresosTotales: 12345.67,
+          nuevosClientes: 10,
+        }; // Este sería el resultado de una llamada a la API
+        setEstadisticas(data);
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEstadisticas();
+  }, []);
+
   const lineChartData = {
     labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'],
     datasets: [
@@ -71,61 +102,43 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar />
 
-      {/* Contenido principal */}
-      <main className="flex-1 p-8">
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <div className="bg-blue-600 text-white p-6 rounded-2xl">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-blue-500 rounded-lg">
-                <FontAwesomeIcon icon={faDollarSign} className="h-5 w-5" />
-              </div>
-            </div>
-            <h3 className="text-sm mb-1">Ventas Totales</h3>
-            <div className="text-2xl font-bold mb-1">$612,917</div>
-          </div>
+      <div className="flex-1 overflow-auto p-6">
+        <Header title="Dashboard" />
 
-          <div className="bg-green-100 p-6 rounded-2xl">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-green-200 rounded-lg">
-                <FontAwesomeIcon icon={faCheck} className="h-5 w-5 text-green-700" />
-              </div>
-            </div>
-            <h3 className="text-sm text-gray-600 mb-1">Cotizaciones Aprobadas</h3>
-            <div className="text-2xl font-bold mb-1 text-green-700">89</div>
-          </div>
-
-          <div className="bg-red-100 p-6 rounded-2xl">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-red-200 rounded-lg">
-                <FontAwesomeIcon icon={faTimes} className="h-5 w-5 text-red-700" />
-              </div>
-            </div>
-            <h3 className="text-sm text-gray-600 mb-1">Cotizaciones Rechazadas</h3>
-            <div className="text-2xl font-bold mb-1 text-red-700">23</div>
-          </div>
-
-          <div className="bg-orange-100 p-6 rounded-2xl">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-orange-200 rounded-lg">
-                <FontAwesomeIcon icon={faClock} className="h-5 w-5 text-orange-700"/>
-              </div>
-            </div>
-            <h3 className="text-sm text-gray-600 mb-1">Cotizaciones Pendientes</h3>
-            <div className="text-2xl font-bold mb-1 text-yellow-700">23</div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-gray-100 rounded-lg">
-                <FontAwesomeIcon icon={faFileAlt} className="h-5 w-5" />
-              </div>
-            </div>
-            <h3 className="text-sm text-gray-600 mb-1">Total de Facturas</h3>
-            <div className="text-2xl font-bold mb-1">89</div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {isLoading ? (
+            <LoadingSpinner size="12" color="blue-500" />
+          ) : (
+            <>
+              <EstadisticasCard
+                icon={faFileInvoice}
+                title="Total Cotizaciones"
+                value={estadisticas.totalCotizaciones}
+                color="blue-500"
+              />
+              <EstadisticasCard
+                icon={faUsers}
+                title="Clientes Totales"
+                value={estadisticas.totalClientes}
+                color="green-500"
+              />
+              <EstadisticasCard
+                icon={faDollarSign}
+                title="Ingresos Totales"
+                value={`$${estadisticas.ingresosTotales.toLocaleString()}`}
+                color="yellow-500"
+              />
+              <EstadisticasCard
+                icon={faChartLine}
+                title="Nuevos Clientes"
+                value={estadisticas.nuevosClientes}
+                color="purple-500"
+              />
+            </>
+          )}
         </div>
 
         <div className="grid grid-cols-7 gap-6">
@@ -233,9 +246,10 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
 
 export default Dashboard;
+

@@ -1,89 +1,143 @@
-// src/components/layout/ResponsiveSidebar.js
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faTimes, 
+import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
   faHome,
-  faFileInvoice,
+  faFileAlt,
   faUsers,
   faCog,
-  faSignOutAlt,
-  faBars
-} from '@fortawesome/free-solid-svg-icons';
+  faComments,
+  faQuestionCircle,
+  faChartBar,
+  faBars,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const ResponsiveSidebar = ({ isOpen, onToggle }) => {
-  const menuItems = [
-    { icon: faHome, text: 'Dashboard', path: '/dashboard' },
-    { icon: faFileInvoice, text: 'Cotizaciones', path: '/cotizaciones' },
-    { icon: faUsers, text: 'Clientes', path: '/clientes' },
-    { icon: faCog, text: 'Configuración', path: '/configuracion' }
-  ];
+const ResponsiveSidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Función para verificar si una ruta está activa
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <>
-      {/* Burger Menu Button */}
+    <div className="flex h-screen">
+      {/* Botón para abrir/cerrar la barra lateral en dispositivos móviles */}
       <button
-        onClick={onToggle}
-        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-lg lg:hidden"
+        className="p-4 text-gray-600 md:hidden"
+        onClick={() => setIsOpen(!isOpen)}
       >
-        <FontAwesomeIcon icon={isOpen ? faTimes : faBars} className="text-gray-600 text-xl" />
+        <FontAwesomeIcon icon={isOpen ? faTimes : faBars} size="lg" />
       </button>
 
-      {/* Overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={onToggle}
-        />
-      )}
-
       {/* Sidebar */}
-      <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50
-        lg:relative lg:transform-none lg:transition-none
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Logo/Header */}
-          <div className="p-4 border-b flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-800">Mi Empresa</h1>
-            <button onClick={onToggle} className="lg:hidden text-gray-600">
-              <FontAwesomeIcon icon={faTimes} />
+      <aside
+        className={`fixed inset-y-0 left-0 bg-white shadow-lg p-6 transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-200 ease-in-out md:translate-x-0 md:static md:w-64`}
+      >
+        <div className="flex items-center mb-8">
+          <img src="/viang-logo.png" alt="Viang Solution" className="h-12 w-auto mr-2" />
+        </div>
+
+        <div className="space-y-4 flex-1">
+          <div className="text-sm text-gray-500 mb-2">MENÚ</div>
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate("/")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
+            >
+              <FontAwesomeIcon icon={faHome} className="mr-3 text-gray-500 h-5 w-5" />
+              Panel Principal
+            </button>
+
+            <button
+              onClick={() => navigate("/cotizaciones")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/cotizaciones") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
+            >
+              <FontAwesomeIcon icon={faFileAlt} className="mr-3 text-gray-500 h-5 w-5" />
+              Cotizaciones
+            </button>
+
+            <button
+              onClick={() => navigate("/facturas")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/facturas") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
+            >
+              <FontAwesomeIcon icon={faFileAlt} className="mr-3 text-gray-500 h-5 w-5" />
+              Facturas
+            </button>
+
+            <button
+              onClick={() => navigate("/clientes")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/clientes") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
+            >
+              <FontAwesomeIcon icon={faUsers} className="mr-3 text-gray-500 h-5 w-5" />
+              Clientes
             </button>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 py-4">
-            <ul className="space-y-2">
-              {menuItems.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    className="flex items-center px-6 py-2 text-gray-700 hover:bg-gray-100"
-                    onClick={() => onToggle()}
-                  >
-                    <FontAwesomeIcon icon={item.icon} className="w-5 h-5 mr-3" />
-                    <span>{item.text}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Footer/Logout */}
-          <div className="border-t p-4">
-            <button 
-              onClick={() => {/* Agregar lógica de logout */}}
-              className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+          <div className="text-sm text-gray-500 mt-8 mb-2">REPORTES</div>
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate("/reportes")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/reportes") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
             >
-              <FontAwesomeIcon icon={faSignOutAlt} className="w-5 h-5 mr-3" />
-              <span>Cerrar Sesión</span>
+              <FontAwesomeIcon icon={faChartBar} className="mr-3 text-gray-500 h-5 w-5" />
+              Reportes
+            </button>
+          </div>
+
+          <div className="text-sm text-gray-500 mt-8 mb-2">HERRAMIENTAS</div>
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate("/configuracion")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/configuracion") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
+            >
+              <FontAwesomeIcon icon={faCog} className="mr-3 text-gray-500 h-5 w-5" />
+              Configuración
+            </button>
+
+            <button
+              onClick={() => navigate("/comentarios")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/comentarios") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
+            >
+              <FontAwesomeIcon icon={faComments} className="mr-3 text-gray-500 h-5 w-5" />
+              Comentarios
+            </button>
+
+            <button
+              onClick={() => navigate("/ayuda")}
+              className={`flex items-center text-gray-700 w-full p-2 rounded-lg transition-colors duration-200 ${
+                isActive("/ayuda") ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+              }`}
+            >
+              <FontAwesomeIcon icon={faQuestionCircle} className="mr-3 text-gray-500 h-5 w-5" />
+              Ayuda
             </button>
           </div>
         </div>
       </aside>
-    </>
+
+      {/* Contenido principal */}
+      <div className="flex-1 ml-0 md:ml-64 bg-gray-100">
+        {/* Aquí iría el contenido dinámico de las páginas */}
+      </div>
+    </div>
   );
 };
 

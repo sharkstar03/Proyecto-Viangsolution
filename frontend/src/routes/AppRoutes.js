@@ -1,18 +1,18 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
-import Facturas from "../pages/Facturas";
 import Cotizaciones from "../pages/Cotizaciones";
+import Facturas from "../pages/Facturas";
+import Login from "../pages/Login";
 
 const AppRoutes = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/facturas" element={<Facturas />} />
-        <Route path="/cotizaciones" element={<Cotizaciones />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/cotizaciones" element={<Cotizaciones />} />
+      <Route path="/facturas" element={<Facturas />} />
+      <Route path="/login" element={<Login />} />
+    </Routes>
   );
 };
 

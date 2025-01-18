@@ -1,8 +1,32 @@
-import axios from "axios";
+import axiosInstance from "./api";
 
-const API_URL = "http://localhost:5000/api/estadisticas";
-
+// Obtener estadísticas generales
 export const obtenerEstadisticas = async () => {
-  const response = await axios.get(API_URL);
-  return response.data;
+  try {
+    const response = await axiosInstance.get("/estadisticas");
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener estadísticas:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+// Obtener estadísticas específicas por tipo
+export const obtenerEstadisticaPorTipo = async (tipo) => {
+  try {
+    const response = await axiosInstance.get(`/estadisticas/${tipo}`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error al obtener estadísticas del tipo ${tipo}:`,
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+// Exporta todas las funciones para facilitar su uso
+export default {
+  obtenerEstadisticas,
+  obtenerEstadisticaPorTipo,
 };

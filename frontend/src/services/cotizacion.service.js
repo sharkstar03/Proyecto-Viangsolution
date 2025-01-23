@@ -1,5 +1,5 @@
 // src/services/cotizacion.service.js
-import { api } from './api';
+import { api } from './api'; 
 
 export const cotizacionService = {
   // Obtener todas las cotizaciones

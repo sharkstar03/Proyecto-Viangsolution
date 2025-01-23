@@ -68,21 +68,11 @@ def requires_role(role):
         return decorated_function
     return decorator
 
-def generate_token(data, expiration=24):
-    """Genera un token JWT"""
-    try:
-        payload = {
-            **data,
-            'exp': datetime.utcnow() + timedelta(hours=expiration)
-        }
-        return jwt.encode(
-            payload,
-            Config.SECRET_KEY,
-            algorithm="HS256"
-        )
-    except Exception as e:
-        print(f"Error generando token: {e}")
-        return None
+def generate_token(payload, secret_key):
+    expiration = datetime.utcnow() + timedelta(seconds=Config.JWT_EXPIRATION_DELTA)
+    payload['exp'] = expiration
+    token = jwt.encode(payload, secret_key, algorithm='HS256')
+    return token
 
 def verify_token(token):
     """Verifica un token JWT"""

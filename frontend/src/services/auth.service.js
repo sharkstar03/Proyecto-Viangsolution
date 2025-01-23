@@ -1,7 +1,7 @@
 // frontend/src/services/auth.service.js
-import api from './api';
+import { api } from './api'; 
 
-const authService = {
+export const authService = {
   login: async (credentials) => {
     try {
       const response = await api.post('/auth/login', credentials);

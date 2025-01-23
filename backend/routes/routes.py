@@ -14,11 +14,11 @@ payment_controller = PaymentController()
 report_controller = ReportController()
 
 # Blueprints
-auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
-cotizaciones_bp = Blueprint('cotizaciones', __name__, url_prefix='/api/cotizaciones')
-facturas_bp = Blueprint('facturas', __name__, url_prefix='/api/facturas')
-payments_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
-reports_bp = Blueprint('reports', __name__, url_prefix='/api/reports')
+auth_bp = Blueprint('auth', __name__)
+cotizaciones_bp = Blueprint('cotizaciones', __name__)
+facturas_bp = Blueprint('facturas', __name__)
+payments_bp = Blueprint('payments', __name__)
+reports_bp = Blueprint('reports', __name__)
 
 # Rutas de Autenticación
 @auth_bp.route('/login', methods=['POST'])
@@ -48,7 +48,7 @@ def reset_password():
 # Rutas de Cotizaciones
 @cotizaciones_bp.route('/', methods=['GET'])
 def get_cotizaciones():
-    return cotizaciones_controller.get_cotizaciones()
+    return {"message": "Lista de cotizaciones"}
 
 @cotizaciones_bp.route('/', methods=['POST'])
 def create_cotizacion():

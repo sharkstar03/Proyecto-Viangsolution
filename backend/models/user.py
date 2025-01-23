@@ -7,7 +7,7 @@ from .database import database
 class User:
     def __init__(self):
         self.db = database.get_db()
-        self.collection = self.db.users
+        self.collection = self.db['users']  # Asegúrate de que la colección es 'users'
 
     def create(self, data):
         """Crea un nuevo usuario"""

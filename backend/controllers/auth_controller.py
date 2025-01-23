@@ -1,9 +1,8 @@
-# backend/controllers/auth_controller.py
 from flask import jsonify, request
 from models.user import User
 from utils.auth_utils import generate_token, hash_password, verify_password
 from services.notification_service import NotificationService
-from datetime import datetime, timedelta
+from datetime import datetime
 import jwt
 from config import Config
 
@@ -11,10 +10,16 @@ class AuthController:
     def __init__(self):
         self.user_model = User()
         self.notification_service = NotificationService()
+        self.config = Config()
 
     def login(self):
-        """Maneja el inicio de sesión de usuarios"""
         try:
+            if request.content_type != 'application/json':
+                return jsonify({
+                    "status": "error",
+                    "message": "Content-Type debe ser application/json"
+                }), 415
+
             data = request.get_json()
             if not data:
                 return jsonify({
@@ -49,7 +54,7 @@ class AuthController:
                 'user_id': str(user['_id']),
                 'email': user['email'],
                 'role': user['role']
-            })
+            }, self.config.JWT_SECRET_KEY)
 
             # Registrar último acceso
             self.user_model.update_last_login(str(user['_id']))
@@ -73,14 +78,20 @@ class AuthController:
             }), 200
 
         except Exception as e:
+            print(f"Error en login: {str(e)}")
             return jsonify({
                 "status": "error",
                 "message": str(e)
             }), 500
 
     def register(self):
-        """Registra un nuevo usuario"""
         try:
+            if request.content_type != 'application/json':
+                return jsonify({
+                    "status": "error",
+                    "message": "Content-Type debe ser application/json"
+                }), 415
+
             data = request.get_json()
             if not data:
                 return jsonify({
@@ -90,142 +101,64 @@ class AuthController:
 
             # Validar campos requeridos
             required_fields = ['email', 'password', 'nombre']
-            if not all(field in data for field in required_fields):
-                return jsonify({
-                    "status": "error",
-                    "message": "Faltan campos requeridos"
-                }), 400
+            for field in required_fields:
+                if not data.get(field):
+                    return jsonify({
+                        "status": "error",
+                        "message": f"El campo {field} es requerido"
+                    }), 400
 
-            # Verificar si el email ya existe
-            if self.user_model.get_by_email(data['email']):
+            # Verificar si el usuario ya existe
+            existing_user = self.user_model.get_by_email(data['email'])
+            if existing_user:
                 return jsonify({
                     "status": "error",
                     "message": "El email ya está registrado"
-                }), 400
+                }), 409
 
             # Hashear contraseña
-            data['password'] = hash_password(data['password'])
-            
-            # Establecer rol por defecto
-            data['role'] = 'user'
-            
-            # Crear usuario
-            user_id = self.user_model.create(data)
+            hashed_password = hash_password(data['password'])
 
-            # Crear notificación
+            # Crear nuevo usuario
+            new_user = {
+                'email': data['email'],
+                'password': hashed_password,
+                'nombre': data['nombre'],
+                'role': 'user',  # Role por defecto
+                'created_at': datetime.utcnow(),
+                'last_login': datetime.utcnow()
+            }
+
+            user_id = self.user_model.create(new_user)
+
+            # Generar token
+            token = generate_token({
+                'user_id': str(user_id),
+                'email': data['email'],
+                'role': 'user'
+            }, self.config.JWT_SECRET_KEY)
+
+            # Crear notificación de bienvenida
             self.notification_service.create_notification(
-                user_id=user_id,
-                type="registro",
-                message="Registro exitoso. ¡Bienvenido!"
+                user_id=str(user_id),
+                type="welcome",
+                message=f"Bienvenido a VianGsolution, {data['nombre']}!"
             )
 
             return jsonify({
                 "status": "success",
                 "message": "Usuario registrado exitosamente",
-                "user_id": user_id
+                "token": token,
+                "user": {
+                    "id": str(user_id),
+                    "email": data['email'],
+                    "nombre": data['nombre'],
+                    "role": 'user'
+                }
             }), 201
 
         except Exception as e:
-            return jsonify({
-                "status": "error",
-                "message": str(e)
-            }), 500
-
-    def change_password(self):
-        """Cambio de contraseña"""
-        try:
-            data = request.get_json()
-            if not data:
-                return jsonify({
-                    "status": "error",
-                    "message": "No se proporcionaron datos"
-                }), 400
-
-            # Validar campos requeridos
-            if not all(k in data for k in ['current_password', 'new_password']):
-                return jsonify({
-                    "status": "error",
-                    "message": "Faltan campos requeridos"
-                }), 400
-
-            # Obtener usuario actual
-            user = self.user_model.get_by_id(request.user.get('id'))
-            if not user:
-                return jsonify({
-                    "status": "error",
-                    "message": "Usuario no encontrado"
-                }), 404
-
-            # Verificar contraseña actual
-            if not verify_password(data['current_password'], user['password']):
-                return jsonify({
-                    "status": "error",
-                    "message": "Contraseña actual incorrecta"
-                }), 400
-
-            # Actualizar contraseña
-            new_password_hash = hash_password(data['new_password'])
-            self.user_model.update_password(request.user.get('id'), new_password_hash)
-
-            # Crear notificación
-            self.notification_service.create_notification(
-                user_id=request.user.get('id'),
-                type="password_changed",
-                message="Se ha cambiado la contraseña de tu cuenta"
-            )
-
-            return jsonify({
-                "status": "success",
-                "message": "Contraseña actualizada exitosamente"
-            }), 200
-
-        except Exception as e:
-            return jsonify({
-                "status": "error",
-                "message": str(e)
-            }), 500
-
-    def forgot_password(self):
-        """Inicio de proceso de recuperación de contraseña"""
-        try:
-            data = request.get_json()
-            if not data or 'email' not in data:
-                return jsonify({
-                    "status": "error",
-                    "message": "Email requerido"
-                }), 400
-
-            # Verificar que el usuario existe
-            user = self.user_model.get_by_email(data['email'])
-            if not user:
-                return jsonify({
-                    "status": "error",
-                    "message": "Email no encontrado"
-                }), 404
-
-            # Generar token de recuperación
-            recovery_token = generate_token({
-                'user_id': str(user['_id']),
-                'type': 'password_recovery',
-                'exp': datetime.utcnow() + timedelta(hours=1)
-            })
-
-            # Guardar token en la base de datos
-            self.user_model.set_recovery_token(str(user['_id']), recovery_token)
-
-            # Crear notificación
-            self.notification_service.create_notification(
-                user_id=str(user['_id']),
-                type="password_recovery",
-                message="Se ha iniciado el proceso de recuperación de contraseña"
-            )
-
-            return jsonify({
-                "status": "success",
-                "message": "Se ha enviado un email con las instrucciones"
-            }), 200
-
-        except Exception as e:
+            print(f"Error en register: {str(e)}")
             return jsonify({
                 "status": "error",
                 "message": str(e)

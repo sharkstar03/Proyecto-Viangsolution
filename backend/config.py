@@ -17,6 +17,7 @@ class Config:
     # JWT
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'tu-clave-jwt-aqui')
     JWT_ACCESS_TOKEN_EXPIRES = 24 * 60 * 60  # 24 horas
+    JWT_EXPIRATION_DELTA = int(os.getenv('JWT_EXPIRATION_DELTA', 3600))  # En segundos
     
     # Upload
     UPLOAD_FOLDER = 'static/uploads'

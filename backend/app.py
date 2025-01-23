@@ -1,13 +1,12 @@
 # backend/app.py
 from flask import Flask, jsonify
 from flask_cors import CORS
-from routes.routes import (
-    auth_bp,
-    cotizaciones_bp,
-    facturas_bp,
-    payments_bp,
-    reports_bp
-)
+from routes.auth_routes import auth_bp
+# Importa otros blueprints según sea necesario
+# from routes.cotizaciones_routes import cotizaciones_bp
+# from routes.facturas_routes import facturas_bp
+# from routes.payments_routes import payments_bp
+# from routes.reports_routes import reports_bp
 from models.database import database
 from dotenv import load_dotenv
 import os
@@ -26,13 +25,7 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
 
 # Configurar CORS
-CORS(app, resources={
-    r"/api/*": {
-        "origins": os.getenv('CORS_ORIGINS', '*').split(','),
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # Asegurar que existe el directorio de uploads
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -42,10 +35,11 @@ database.connect()
 
 # Registrar blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(cotizaciones_bp, url_prefix='/api/cotizaciones')
-app.register_blueprint(facturas_bp, url_prefix='/api/facturas')
-app.register_blueprint(payments_bp, url_prefix='/api/payments')
-app.register_blueprint(reports_bp, url_prefix='/api/reports')
+# Registrar otros blueprints según sea necesario
+# app.register_blueprint(cotizaciones_bp, url_prefix='/api/cotizaciones')
+# app.register_blueprint(facturas_bp, url_prefix='/api/facturas')
+# app.register_blueprint(payments_bp, url_prefix='/api/payments')
+# app.register_blueprint(reports_bp, url_prefix='/api/reports')
 
 # Manejadores de errores
 @app.errorhandler(400)
@@ -118,6 +112,14 @@ def status():
         'version': '1.0.0'
     })
 
+# Ruta de prueba
+@app.route('/api/test')
+def test():
+    return jsonify({
+        'status': 'success',
+        'message': 'API funcionando correctamente'
+    })
+
 # Ruta raíz
 @app.route('/')
 def index():
@@ -130,11 +132,15 @@ def index():
 
 # Solo ejecutar en desarrollo
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('ENVIRONMENT') != 'production'
-    
-    app.run(
-        host='0.0.0.0',
-        port=port,
-        debug=debug
-    )
+    try:
+        port = int(os.getenv('PORT', 5000))
+        debug = os.getenv('ENVIRONMENT') != 'production'
+        
+        print(f"Iniciando servidor en puerto {port}...")
+        app.run(
+            host='0.0.0.0',
+            port=port,
+            debug=True
+        )
+    except Exception as e:
+        print(f"Error al iniciar el servidor: {str(e)}")

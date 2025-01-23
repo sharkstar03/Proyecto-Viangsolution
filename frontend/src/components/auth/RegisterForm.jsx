@@ -47,7 +47,13 @@ const RegisterForm = () => {
 
     try {
       setLoading(true);
-      await register(formData);
+      await register({
+        email: formData.email,
+        password: formData.password,
+        nombre: formData.name,
+        companyName: formData.companyName,
+        rfc: formData.rfc
+      });
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Error al registrar usuario');

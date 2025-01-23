@@ -26,9 +26,15 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      await login(formData);
+      console.log('Enviando datos de inicio de sesión:', formData);
+      await login(formData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       navigate('/dashboard');
     } catch (error) {
+      console.error('Error al iniciar sesión:', error);
       setError(error.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
@@ -104,3 +110,4 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+

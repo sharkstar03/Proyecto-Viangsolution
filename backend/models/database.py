@@ -1,37 +1,28 @@
 # backend/models/database.py
 from pymongo import MongoClient
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from config import Config
 
 class Database:
     def __init__(self):
         self.client = None
         self.db = None
-        self._connected = False
 
     def connect(self):
         """Establece la conexión con MongoDB"""
         try:
-            # Obtener la URL de conexión desde variables de entorno
-            mongodb_url = os.getenv('MONGODB_URL', 'mongodb://localhost:27017')
-            self.client = MongoClient(mongodb_url)
-            self.db = self.client[os.getenv('DB_NAME', 'viangsolutions')]
+            self.client = MongoClient(Config.MONGODB_URL)
+            self.db = self.client[Config.DB_NAME]
             
             # Verificar la conexión haciendo una operación simple
             self.client.admin.command('ping')
             
-            self._connected = True
-            print("Conexión exitosa a MongoDB")
+            print("Conexión a la base de datos establecida")
         except Exception as e:
-            print(f"Error al conectar a MongoDB: {e}")
-            self._connected = False
-            raise e
+            print(f"Error conectando a la base de datos: {str(e)}")
 
     def get_db(self):
         """Obtiene la instancia de la base de datos"""
-        if not self._connected:
+        if self.db is None:
             self.connect()
         return self.db
 
@@ -39,7 +30,6 @@ class Database:
         """Cierra la conexión con MongoDB"""
         if self.client is not None:
             self.client.close()
-            self._connected = False
 
 # Instancia global de la base de datos
 database = Database()

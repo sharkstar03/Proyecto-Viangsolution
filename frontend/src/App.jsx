@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Cotizaciones from './pages/Cotizaciones';
 import Facturas from './pages/Facturas';
 import Settings from './pages/Settings';
+//inciando la aplicacion
 
 function App() {
   return (
